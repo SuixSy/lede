@@ -54,7 +54,6 @@ jobs:
           echo "CONFIG_PACKAGE_kmod-usb2=y" >> .config
           echo "CONFIG_PACKAGE_kmod-usb3=y" >> .config
           echo "CONFIG_PACKAGE_luci=y" >> .config
-          echo "CONFIG_PACKAGE_dockerd=y" >> .config
           echo "CONFIG_PACKAGE_kmod-fb=n" >> .config
           echo "CONFIG_PACKAGE_kmod-fb-cfb-fillrect=n" >> .config
           echo "CONFIG_PACKAGE_kmod-fb-cfb-copyarea=n" >> .config
@@ -66,7 +65,7 @@ jobs:
 
       - name: Compile
         run: make V=s -j1 NO_CCACHE=1
-
+      
       - name: Upload Firmware
         uses: actions/upload-artifact@v4
         with:
