@@ -1,18 +1,54 @@
-name: Build LEDE-K3
+name: Build K3 LEDE
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - master
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu‑22.04
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Space cleanup
+        uses: easimon/maximize‑build‑space@v5
+        with:
+          remove‑dotnet: true
+          remove‑android: true
+          remove‑haskell: true
+          remove‑docker‑images: true
 
-      - name: Install Packages
+      - name: Checkout LEDE source
+        uses: actions/checkout@v4
+        with:
+          repository: coolsnowwolf/lede
+          ref: master
+          fetch‑depth: 1
+
+      - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential libncurses-dev gawk flex bison openssl libssl-dev dkms libelf-dev libudev-dev libpci-dev libiberty-dev autoconf automake curl wget unzip git swig texinfo
+          sudo apt update
+          sudo apt install -y build‑essential gcc g++ binutils flex bison gawk autoconf automake libtool ccache curl wget unzip git file libncurses5‑dev zlib1g‑dev libssl‑dev python3‑distutils
+
+      - name: Generate .config for Phicomm K3
+        run: |
+          make defconfig
+          cat >> .config <<EOF
+CONFIG_TARGET_bcm53xx=y
+CONFIG_TARGET_MULTI_PROFILE=y
+CONFIG_TARGET_DEVICE_bcm53xx_DEVICE_phicomm‑k3=y
+CONFIG_PACKAGE_luci‑app‑dockerman=y
+CONFIG_PACKAGE_luci‑app‑shellcrash=y
+CONFIG_PACKAGE_kmod‑tun=y
+CONFIG_KERNEL_EXT4_FS_SECURITY=y
+CONFIG_KERNEL_EXT4_FS_XATTR=y
+EOF
+          make oldconfig
+
+      - name: Download packages
+        run: make download -j$(nproc)
+
+      - name: Compile firmware
+        run: make -j$(nproc)
+
+      - name: Upload firmware artifact
+        uses: actions/upload‑artifact@v4
+        with:
+          name: firmware‑k3
+          path: bin/targets/bcm53xx/bcm53xx/*.trx
