@@ -15,7 +15,6 @@ jobs:
           remove-dotnet: true
           remove-android: true
           remove-haskell: true
-          remove-docker-images: true
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -58,6 +57,10 @@ jobs:
           echo "CONFIG_PACKAGE_luci-app-dockerman=y" >> .config
           echo "CONFIG_PACKAGE_dockerd=y" >> .config
           echo "CONFIG_PACKAGE_luci-app-shellcrash=y" >> .config
+          echo "CONFIG_PACKAGE_kmod-fb=n" >> .config
+          echo "CONFIG_PACKAGE_kmod-fb-cfb-fillrect=n" >> .config
+          echo "CONFIG_PACKAGE_kmod-fb-cfb-copyarea=n" >> .config
+          echo "CONFIG_PACKAGE_kmod-fb-cfb-imgblt=n" >> .config
           make oldconfig
 
       - name: Download
