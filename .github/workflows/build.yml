@@ -39,6 +39,7 @@ jobs:
           echo "CONFIG_TARGET_bcm53xx=y" >> .config
           echo "CONFIG_TARGET_MULTI_PROFILE=y" >> .config
           echo "CONFIG_TARGET_DEVICE_bcm53xx_DEVICE_phicomm-k3=y" >> .config
+          echo "CONFIG_TARGET_IMAGES_GZIP=y" >> .config
           echo "CONFIG_KERNEL_EXT4_FS=y" >> .config
           echo "CONFIG_KERNEL_EXT4_FS_POSIX_ACL=y" >> .config
           echo "CONFIG_KERNEL_EXT4_FS_SECURITY=y" >> .config
