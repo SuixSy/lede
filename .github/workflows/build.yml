@@ -1,4 +1,4 @@
-name: Build LEDE-K3-Lite
+name: Build LEDE‑K3‑5.15
 on:
   workflow_dispatch:
   push:
@@ -7,40 +7,43 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu‑latest
     steps:
       - name: Maximize build space
-        uses: easimon/maximize-build-space@v5
+        uses: easimon/maximize‑build‑space@v5
         with:
-          remove-dotnet: true
-          remove-android: true
-          remove-haskell: true
+          remove‑dotnet: true
+          remove‑android: true
+          remove‑haskell: true
 
-      - name: Checkout LEDE
-        uses: actions/checkout@v4
+      - name: Checkout source (5.15 旧版代码)
+        run: |
+          git clone https://github.com/coolsnowwolf/lede.git
+          cd lede
+          # 切换到5.15内核提交快照
+          git checkout 8912b21650780420932763623827227899926661
+        working‑directory: ${{ github.workspace }}
 
-      - name: Install dependency
+      - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y build-essential libncurses-dev gawk flex bison openssl libssl-dev libelf-dev autoconf automake git wget curl unzip swig texinfo
+          sudo apt install -y build‑essential libncurses‑dev gawk flex bison openssl libssl‑dev libelf‑dev autoconf automake git wget curl unzip swig texinfo
+        working‑directory: ${{ github.workspace }}/lede
 
-      - name: Feeds 只更新核心基础源，跳过多余软件源
+      - name: Feeds update
         run: |
-          sed -i '/^src-git luci2/d' feeds.conf.default
-          sed -i '/^src-git packages/d' feeds.conf.default
           ./scripts/feeds update base luci
           ./scripts/feeds install -a
+        working‑directory: ${{ github.workspace }}/lede
 
-      - name: Minimal K3 Config（核心功能全部保留）
+      - name: Generate config K3 Lite
         run: |
           rm -f .config
           make defconfig
-          # 目标机型 斐讯K3 bcm53xx
           echo "CONFIG_TARGET_bcm53xx=y" >> .config
           echo "CONFIG_TARGET_MULTI_PROFILE=y" >> .config
-          echo "CONFIG_TARGET_DEVICE_bcm53xx_DEVICE_phicomm-k3=y" >> .config
+          echo "CONFIG_TARGET_DEVICE_bcm53xx_DEVICE_phicomm‑k3=y" >> .config
           echo "CONFIG_BUILD_PATENTED=y" >> .config
-          # Docker必须内核选项（解决failed to register layer报错）
           echo "CONFIG_KERNEL_EXT4_FS=y" >> .config
           echo "CONFIG_KERNEL_EXT4_FS_POSIX_ACL=y" >> .config
           echo "CONFIG_KERNEL_EXT4_FS_SECURITY=y" >> .config
@@ -50,26 +53,27 @@ jobs:
           echo "CONFIG_KERNEL_CGROUP_FREEZER=y" >> .config
           echo "CONFIG_KERNEL_CGROUP_PIDS=y" >> .config
           echo "CONFIG_KERNEL_BLK_CGROUP=y" >> .config
-          # USB全套、U盘文件系统、TUN虚拟网卡
-          echo "CONFIG_PACKAGE_kmod-tun=y" >> .config
-          echo "CONFIG_PACKAGE_kmod-fs-ntfs3=y" >> .config
-          echo "CONFIG_PACKAGE_kmod-fs-f2fs=y" >> .config
-          echo "CONFIG_PACKAGE_kmod-usb-ohci=y" >> .config
-          echo "CONFIG_PACKAGE_kmod-usb-uhci=y" >> .config
-          echo "CONFIG_PACKAGE_kmod-usb2=y" >> .config
-          echo "CONFIG_PACKAGE_kmod-usb3=y" >> .config
-          # 基础网页管理界面
+          echo "CONFIG_PACKAGE_kmod‑tun=y" >> .config
+          echo "CONFIG_PACKAGE_kmod‑fs‑ntfs3=y" >> .config
+          echo "CONFIG_PACKAGE_kmod‑fs‑f2fs=y" >> .config
+          echo "CONFIG_PACKAGE_kmod‑usb‑ohci=y" >> .config
+          echo "CONFIG_PACKAGE_kmod‑usb‑uhci=y" >> .config
+          echo "CONFIG_PACKAGE_kmod‑usb2=y" >> .config
+          echo "CONFIG_PACKAGE_kmod‑usb3=y" >> .config
           echo "CONFIG_PACKAGE_luci=y" >> .config
           make oldconfig
+        working‑directory: ${{ github.workspace }}/lede
 
-      - name: Pre‑download source
+      - name: Download sources
         run: make download -j4
+        working‑directory: ${{ github.workspace }}/lede
 
-      - name: Compile single thread 最低负载
+      - name: Compile
         run: make V=s -j1 NO_CCACHE=1
+        working‑directory: ${{ github.workspace }}/lede
 
-      - name: Upload firmware artifact
-        uses: actions/upload-artifact@v4
+      - name: Upload firmware
+        uses: actions/upload‑artifact@v4
         with:
-          name: K3-Lite-Firmware
-          path: bin/targets/bcm53xx/bcm53xx/
+          name: K3‑5.15‑Firmware
+          path: lede/bin/targets/bcm53xx/generic/
