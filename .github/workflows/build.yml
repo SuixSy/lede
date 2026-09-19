@@ -54,10 +54,6 @@ jobs:
           echo "CONFIG_PACKAGE_kmod-usb2=y" >> .config
           echo "CONFIG_PACKAGE_kmod-usb3=y" >> .config
           echo "CONFIG_PACKAGE_luci=y" >> .config
-          echo "CONFIG_PACKAGE_kmod-fb=n" >> .config
-          echo "CONFIG_PACKAGE_kmod-fb-cfb-fillrect=n" >> .config
-          echo "CONFIG_PACKAGE_kmod-fb-cfb-copyarea=n" >> .config
-          echo "CONFIG_PACKAGE_kmod-fb-cfb-imgblt=n" >> .config
           make oldconfig
 
       - name: Download
