@@ -31,26 +31,14 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      - name: Generate full K3 .config file
+      - name: Load official bcm53xx default config & enable options
         run: |
           cd immortalwrt
-          rm -f .config
-          echo "CONFIG_TARGET_bcm53xx=y" >> .config
-          echo "CONFIG_TARGET_MULTI_PROFILE=y" >> .config
-          echo "CONFIG_TARGET_DEVICE_bcm53xx_DEVICE_phicomm-k3=y" >> .config
-          echo "CONFIG_TARGET_IMAGES_GZIP=y" >> .config
-          echo "CONFIG_TARGET_ROOTFS_SQUASHFS=y" >> .config
-          echo "CONFIG_KERNEL_EXT4_FS=y" >> .config
-          echo "CONFIG_KERNEL_EXT4_FS_POSIX_ACL=y" >> .config
+          make defconfig CONFIG_TARGET=bcm53xx
           echo "CONFIG_KERNEL_EXT4_FS_SECURITY=y" >> .config
+          echo "CONFIG_KERNEL_EXT4_FS_POSIX_ACL=y" >> .config
           echo "CONFIG_KERNEL_CGROUPS=y" >> .config
-          echo "CONFIG_KERNEL_CGROUP_CPUACCT=y" >> .config
-          echo "CONFIG_KERNEL_CGROUP_DEVICE=y" >> .config
-          echo "CONFIG_KERNEL_CGROUP_FREEZER=y" >> .config
-          echo "CONFIG_KERNEL_CGROUP_PIDS=y" >> .config
-          echo "CONFIG_KERNEL_BLK_CGROUP=y" >> .config
           echo "CONFIG_PACKAGE_kmod-tun=y" >> .config
-          echo "CONFIG_PACKAGE_luci=y" >> .config
           make oldconfig
 
       - name: Download source packages
