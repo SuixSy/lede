@@ -23,7 +23,7 @@ jobs:
         run: |
           cd immortalwrt
           sudo apt update
-          sudo apt install -y build-essential libncurses-dev gawk flex bison openssl libssl-dev libelf-dev autoconf automake git wget curl unzip swig texinfo
+          sudo apt install -y build-essential libncurses-dev gawk flex bison openssl libssl-dev libelf-dev autoconf automake git wget curl unzip texinfo
 
       - name: Feeds update & install packages
         run: |
@@ -34,24 +34,23 @@ jobs:
       - name: Generate full K3 .config file
         run: |
           cd immortalwrt
-          cat > .config <<'EOF'
-CONFIG_TARGET_bcm53xx=y
-CONFIG_TARGET_MULTI_PROFILE=y
-CONFIG_TARGET_DEVICE_bcm53xx_DEVICE_phicomm-k3=y
-CONFIG_TARGET_IMAGES_GZIP=y
-CONFIG_TARGET_ROOTFS_SQUASHFS=y
-CONFIG_KERNEL_EXT4_FS=y
-CONFIG_KERNEL_EXT4_FS_POSIX_ACL=y
-CONFIG_KERNEL_EXT4_FS_SECURITY=y
-CONFIG_KERNEL_CGROUPS=y
-CONFIG_KERNEL_CGROUP_CPUACCT=y
-CONFIG_KERNEL_CGROUP_DEVICE=y
-CONFIG_KERNEL_CGROUP_FREEZER=y
-CONFIG_KERNEL_CGROUP_PIDS=y
-CONFIG_KERNEL_BLK_CGROUP=y
-CONFIG_PACKAGE_kmod-tun=y
-CONFIG_PACKAGE_luci=y
-EOF
+          rm -f .config
+          echo "CONFIG_TARGET_bcm53xx=y" >> .config
+          echo "CONFIG_TARGET_MULTI_PROFILE=y" >> .config
+          echo "CONFIG_TARGET_DEVICE_bcm53xx_DEVICE_phicomm-k3=y" >> .config
+          echo "CONFIG_TARGET_IMAGES_GZIP=y" >> .config
+          echo "CONFIG_TARGET_ROOTFS_SQUASHFS=y" >> .config
+          echo "CONFIG_KERNEL_EXT4_FS=y" >> .config
+          echo "CONFIG_KERNEL_EXT4_FS_POSIX_ACL=y" >> .config
+          echo "CONFIG_KERNEL_EXT4_FS_SECURITY=y" >> .config
+          echo "CONFIG_KERNEL_CGROUPS=y" >> .config
+          echo "CONFIG_KERNEL_CGROUP_CPUACCT=y" >> .config
+          echo "CONFIG_KERNEL_CGROUP_DEVICE=y" >> .config
+          echo "CONFIG_KERNEL_CGROUP_FREEZER=y" >> .config
+          echo "CONFIG_KERNEL_CGROUP_PIDS=y" >> .config
+          echo "CONFIG_KERNEL_BLK_CGROUP=y" >> .config
+          echo "CONFIG_PACKAGE_kmod-tun=y" >> .config
+          echo "CONFIG_PACKAGE_luci=y" >> .config
           make oldconfig
 
       - name: Download source packages
