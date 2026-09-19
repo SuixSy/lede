@@ -7,42 +7,41 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu‑latest
+    runs-on: ubuntu-latest
     steps:
       - name: Maximize build space
-        uses: easimon/maximize‑build‑space@v5
+        uses: easimon/maximize-build-space@v5
         with:
-          remove‑dotnet: true
-          remove‑android: true
-          remove‑haskell: true
+          remove-dotnet: true
+          remove-android: true
+          remove-haskell: true
 
-      - name: Checkout source (5.15 旧版代码)
+      - name: Checkout & Clone source
         run: |
           git clone https://github.com/coolsnowwolf/lede.git
           cd lede
-          # 切换到5.15内核提交快照
           git checkout 8912b21650780420932763623827227899926661
-        working‑directory: ${{ github.workspace }}
 
       - name: Install dependencies
         run: |
+          cd lede
           sudo apt update
-          sudo apt install -y build‑essential libncurses‑dev gawk flex bison openssl libssl‑dev libelf‑dev autoconf automake git wget curl unzip swig texinfo
-        working‑directory: ${{ github.workspace }}/lede
+          sudo apt install -y build-essential libncurses-dev gawk flex bison openssl libssl-dev libelf-dev autoconf automake git wget curl unzip swig texinfo
 
       - name: Feeds update
         run: |
+          cd lede
           ./scripts/feeds update base luci
           ./scripts/feeds install -a
-        working‑directory: ${{ github.workspace }}/lede
 
-      - name: Generate config K3 Lite
+      - name: Generate K3 Lite config
         run: |
+          cd lede
           rm -f .config
           make defconfig
           echo "CONFIG_TARGET_bcm53xx=y" >> .config
           echo "CONFIG_TARGET_MULTI_PROFILE=y" >> .config
-          echo "CONFIG_TARGET_DEVICE_bcm53xx_DEVICE_phicomm‑k3=y" >> .config
+          echo "CONFIG_TARGET_DEVICE_bcm53xx_DEVICE_phicomm-k3=y" >> .config
           echo "CONFIG_BUILD_PATENTED=y" >> .config
           echo "CONFIG_KERNEL_EXT4_FS=y" >> .config
           echo "CONFIG_KERNEL_EXT4_FS_POSIX_ACL=y" >> .config
@@ -53,27 +52,28 @@ jobs:
           echo "CONFIG_KERNEL_CGROUP_FREEZER=y" >> .config
           echo "CONFIG_KERNEL_CGROUP_PIDS=y" >> .config
           echo "CONFIG_KERNEL_BLK_CGROUP=y" >> .config
-          echo "CONFIG_PACKAGE_kmod‑tun=y" >> .config
-          echo "CONFIG_PACKAGE_kmod‑fs‑ntfs3=y" >> .config
-          echo "CONFIG_PACKAGE_kmod‑fs‑f2fs=y" >> .config
-          echo "CONFIG_PACKAGE_kmod‑usb‑ohci=y" >> .config
-          echo "CONFIG_PACKAGE_kmod‑usb‑uhci=y" >> .config
-          echo "CONFIG_PACKAGE_kmod‑usb2=y" >> .config
-          echo "CONFIG_PACKAGE_kmod‑usb3=y" >> .config
+          echo "CONFIG_PACKAGE_kmod-tun=y" >> .config
+          echo "CONFIG_PACKAGE_kmod-fs-ntfs3=y" >> .config
+          echo "CONFIG_PACKAGE_kmod-fs-f2fs=y" >> .config
+          echo "CONFIG_PACKAGE_kmod-usb-ohci=y" >> .config
+          echo "CONFIG_PACKAGE_kmod-usb-uhci=y" >> .config
+          echo "CONFIG_PACKAGE_kmod-usb2=y" >> .config
+          echo "CONFIG_PACKAGE_kmod-usb3=y" >> .config
           echo "CONFIG_PACKAGE_luci=y" >> .config
           make oldconfig
-        working‑directory: ${{ github.workspace }}/lede
 
       - name: Download sources
-        run: make download -j4
-        working‑directory: ${{ github.workspace }}/lede
+        run: |
+          cd lede
+          make download -j4
 
-      - name: Compile
-        run: make V=s -j1 NO_CCACHE=1
-        working‑directory: ${{ github.workspace }}/lede
+      - name: Compile firmware
+        run: |
+          cd lede
+          make V=s -j1 NO_CCACHE=1
 
-      - name: Upload firmware
-        uses: actions/upload‑artifact@v4
+      - name: Upload firmware artifact
+        uses: actions/upload-artifact@v4
         with:
           name: K3‑5.15‑Firmware
           path: lede/bin/targets/bcm53xx/generic/
