@@ -52,18 +52,6 @@ jobs:
           echo "CONFIG_PACKAGE_luci=y" >> .config
           make oldconfig
 
-      - name: Write built‑in USTC HTTP opkg source
-        run: |
-          cd immortalwrt
-          cat > package/base-files/files/etc/opkg/distfeeds.conf <<'EOF'
-src/gz immortalwrt_core http://mirrors.ustc.edu.cn/immortalwrt/releases/23.05.7/targets/bcm53xx/generic/packages
-src/gz immortalwrt_base http://mirrors.ustc.edu.cn/immortalwrt/releases/23.05.7/packages/mipsle_74k/base
-src/gz immortalwrt_luci http://mirrors.ustc.edu.cn/immortalwrt/releases/23.05.7/packages/mipsle_74k/luci
-src/gz immortalwrt_packages http://mirrors.ustc.edu.cn/immortalwrt/releases/23.05.7/packages/mipsle_74k/packages
-src/gz immortalwrt_routing http://mirrors.ustc.edu.cn/immortalwrt/releases/23.05.7/packages/mipsle_74k/routing
-src/gz immortalwrt_telephony http://mirrors.ustc.edu.cn/immortalwrt/releases/23.05.7/packages/mipsle_74k/telephony
-EOF
-
       - name: Download source packages
         run: |
           cd immortalwrt
