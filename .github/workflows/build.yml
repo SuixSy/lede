@@ -1,4 +1,4 @@
-name: Build LEDE‑K3‑5.15
+name: Build ImmortalWrt‑K3‑23.05.7
 on:
   workflow_dispatch:
   push:
@@ -16,31 +16,29 @@ jobs:
           remove-android: true
           remove-haskell: true
 
-      - name: Clone LEDE 源码
-        run: |
-          git clone --depth=1 --branch=openwrt-23.05 https://github.com/coolsnowwolf/lede.git
+      - name: Clone ImmortalWrt 23.05 branch
+        run: git clone --depth=1 --branch=openwrt-23.05 https://github.com/immortalwrt/immortalwrt.git
 
-      - name: Install dependencies
+      - name: Install compile dependencies
         run: |
-          cd lede
+          cd immortalwrt
           sudo apt update
           sudo apt install -y build-essential libncurses-dev gawk flex bison openssl libssl-dev libelf-dev autoconf automake git wget curl unzip swig texinfo
 
-      - name: Feeds update
+      - name: Feeds update & install packages
         run: |
-          cd lede
-          ./scripts/feeds update base luci
+          cd immortalwrt
+          ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      - name: Generate K3 Lite config
+      - name: Generate K3 custom kernel config
         run: |
-          cd lede
+          cd immortalwrt
           rm -f .config
           make defconfig
           echo "CONFIG_TARGET_bcm53xx=y" >> .config
           echo "CONFIG_TARGET_MULTI_PROFILE=y" >> .config
           echo "CONFIG_TARGET_DEVICE_bcm53xx_DEVICE_phicomm-k3=y" >> .config
-          echo "CONFIG_BUILD_PATENTED=y" >> .config
           echo "CONFIG_KERNEL_EXT4_FS=y" >> .config
           echo "CONFIG_KERNEL_EXT4_FS_POSIX_ACL=y" >> .config
           echo "CONFIG_KERNEL_EXT4_FS_SECURITY=y" >> .config
@@ -51,27 +49,33 @@ jobs:
           echo "CONFIG_KERNEL_CGROUP_PIDS=y" >> .config
           echo "CONFIG_KERNEL_BLK_CGROUP=y" >> .config
           echo "CONFIG_PACKAGE_kmod-tun=y" >> .config
-          echo "CONFIG_PACKAGE_kmod-fs-ntfs3=y" >> .config
-          echo "CONFIG_PACKAGE_kmod-fs-f2fs=y" >> .config
-          echo "CONFIG_PACKAGE_kmod-usb-ohci=y" >> .config
-          echo "CONFIG_PACKAGE_kmod-usb-uhci=y" >> .config
-          echo "CONFIG_PACKAGE_kmod-usb2=y" >> .config
-          echo "CONFIG_PACKAGE_kmod-usb3=y" >> .config
           echo "CONFIG_PACKAGE_luci=y" >> .config
           make oldconfig
 
-      - name: Download sources
+      - name: Write built‑in USTC HTTP opkg source
         run: |
-          cd lede
+          cd immortalwrt
+          cat > package/base-files/files/etc/opkg/distfeeds.conf <<'EOF'
+src/gz immortalwrt_core http://mirrors.ustc.edu.cn/immortalwrt/releases/23.05.7/targets/bcm53xx/generic/packages
+src/gz immortalwrt_base http://mirrors.ustc.edu.cn/immortalwrt/releases/23.05.7/packages/mipsle_74k/base
+src/gz immortalwrt_luci http://mirrors.ustc.edu.cn/immortalwrt/releases/23.05.7/packages/mipsle_74k/luci
+src/gz immortalwrt_packages http://mirrors.ustc.edu.cn/immortalwrt/releases/23.05.7/packages/mipsle_74k/packages
+src/gz immortalwrt_routing http://mirrors.ustc.edu.cn/immortalwrt/releases/23.05.7/packages/mipsle_74k/routing
+src/gz immortalwrt_telephony http://mirrors.ustc.edu.cn/immortalwrt/releases/23.05.7/packages/mipsle_74k/telephony
+EOF
+
+      - name: Download source packages
+        run: |
+          cd immortalwrt
           make download -j4
 
-      - name: Compile firmware
+      - name: Start firmware compile
         run: |
-          cd lede
+          cd immortalwrt
           make V=s -j1 NO_CCACHE=1
 
-      - name: Upload firmware artifact
+      - name: Upload compiled firmware artifact
         uses: actions/upload-artifact@v4
         with:
-          name: K3‑5.15‑Firmware
-          path: lede/bin/targets/bcm53xx/generic/
+          name: K3‑ImmortalWrt‑23.05.7‑Custom
+          path: immortalwrt/bin/targets/bcm53xx/generic/
