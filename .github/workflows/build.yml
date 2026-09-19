@@ -31,10 +31,10 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      - name: Generate bcm53xx default config
+      - name: Generate K3 config
         run: |
           cd immortalwrt
-          ./scripts/config/conf --defconfig=target/linux/bcm53xx/generic/config .config
+          make target/bcm53xx/generic/defconfig
           echo "CONFIG_TARGET_DEVICE_bcm53xx_DEVICE_phicomm-k3=y" >> .config
           echo "CONFIG_KERNEL_EXT4_FS_SECURITY=y" >> .config
           echo "CONFIG_KERNEL_EXT4_FS_POSIX_ACL=y" >> .config
