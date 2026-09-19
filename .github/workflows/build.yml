@@ -31,10 +31,11 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      - name: Load official bcm53xx default config & enable options
+      - name: Generate bcm53xx default config
         run: |
           cd immortalwrt
-          make defconfig CONFIG_TARGET=bcm53xx
+          ./scripts/config/conf --defconfig=target/linux/bcm53xx/generic/config .config
+          echo "CONFIG_TARGET_DEVICE_bcm53xx_DEVICE_phicomm-k3=y" >> .config
           echo "CONFIG_KERNEL_EXT4_FS_SECURITY=y" >> .config
           echo "CONFIG_KERNEL_EXT4_FS_POSIX_ACL=y" >> .config
           echo "CONFIG_KERNEL_CGROUPS=y" >> .config
@@ -44,7 +45,7 @@ jobs:
       - name: Download source packages
         run: |
           cd immortalwrt
-          make download -j4
+          make download -j2
 
       - name: Start firmware compile
         run: |
@@ -54,5 +55,5 @@ jobs:
       - name: Upload compiled firmware artifact
         uses: actions/upload-artifact@v4
         with:
-          name: K3‑ImmortalWrt‑23.05.7‑Custom
+          name: K3‑Firmware
           path: immortalwrt/bin/targets/bcm53xx/generic/
