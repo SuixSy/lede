@@ -1,4 +1,4 @@
-name: Build ImmortalWrt‑K3‑23.05.7
+name: Build ImmortalWrt-K3-23.05.7
 on:
   workflow_dispatch:
   push:
@@ -31,16 +31,19 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      - name: Generate K3 config
+      - name: Generate K3 config (No EOF, No menu)
         run: |
           cd immortalwrt
-          make target/bcm53xx/generic/defconfig
+          rm -f .config
+          echo "CONFIG_TARGET_bcm53xx=y" > .config
+          echo "CONFIG_TARGET_GENERIC_UBI=y" >> .config
           echo "CONFIG_TARGET_DEVICE_bcm53xx_DEVICE_phicomm-k3=y" >> .config
           echo "CONFIG_KERNEL_EXT4_FS_SECURITY=y" >> .config
           echo "CONFIG_KERNEL_EXT4_FS_POSIX_ACL=y" >> .config
           echo "CONFIG_KERNEL_CGROUPS=y" >> .config
           echo "CONFIG_PACKAGE_kmod-tun=y" >> .config
-          make oldconfig
+          echo "CONFIG_PACKAGE-luci=y" >> .config
+          make defconfig
 
       - name: Download source packages
         run: |
@@ -55,5 +58,5 @@ jobs:
       - name: Upload compiled firmware artifact
         uses: actions/upload-artifact@v4
         with:
-          name: K3‑Firmware
+          name: K3-Firmware
           path: immortalwrt/bin/targets/bcm53xx/generic/
