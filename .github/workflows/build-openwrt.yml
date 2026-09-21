@@ -1,40 +1,42 @@
-name: Build OpenWrt
+name: Build OpenWrt K3
 
 on:
   workflow_dispatch:
   push:
-    branches: [ master ]
+    branches:
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@main
+      - name: Checkout source
+        uses: actions/checkout@v4
 
-      - name: Initialization environment
-        env:
-          DEBIAN_FRONTEND: noninteractive
+      - name: Install build dependencies
         run: |
-          sudo apt‑get update
-          sudo apt‑get install -y build‑essential ccache cmake curl file flex gawk gettext git gperf libncurses‑dev libssl‑dev libelf‑dev python3 rsync unzip wget zlib1g‑dev gcc‑multilib g++‑multilib device‑tree‑compiler
+          sudo apt-get update
+          sudo apt-get install -y build-essential libncurses-dev gawk flex bison openssl libssl-dev dkms libelf-dev libudev-dev libpci-dev libiberty-dev autoconf automake curl wget unzip git swig texinfo
 
-      - name: Update feeds & Config
+      - name: Download K3 config
+        run: |
+          wget -O .config https://raw.githubusercontent.com/SuixSy/lede/master/k3.config
+
+      - name: Update & Install feeds
         run: |
           ./scripts/feeds update -a
           ./scripts/feeds install -a
-          # 下载K3现成.config配置
-          wget -O .config https://raw.githubusercontent.com/SuixSy/lede/master/k3.config
+
+      - name: Apply config
+        run: |
           make defconfig
 
-      - name: Download source
-        run: make download -j$(nproc)
-
       - name: Compile firmware
-        run: make -j$(nproc)
+        run: |
+          make -j$(nproc)
 
-      - name: Upload firmware
+      - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
-          name: OpenWrt‑K3‑Firmware
+          name: K3-Firmware
           path: bin/targets/bcm53xx/generic/*.trx
