@@ -25,9 +25,9 @@ jobs:
           wget -O .config https://raw.githubusercontent.com/SuixSy/lede/master/k3.config
           make clean
 
-      - name: Apply config
+      - name: Apply config (Non‑interactive fix)
         run: |
-          make defconfig
+          make olddefconfig
 
       - name: Compile firmware
         run: |
@@ -36,5 +36,5 @@ jobs:
       - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
-          name: K3-Firmware
+          name: K3‑Firmware
           path: bin/targets/bcm53xx/generic/*.trx
