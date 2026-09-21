@@ -2,6 +2,9 @@ name: Build OpenWrt K3
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - master
 
 jobs:
   build:
@@ -24,14 +27,11 @@ jobs:
         run: |
           wget -O .config https://raw.githubusercontent.com/SuixSy/lede/master/k3.config
           make clean
-
-      - name: Apply config (Non‑interactive fix)
-        run: |
-          export TERM=dumb
-          make olddefconfig
+          touch .config.old
 
       - name: Compile firmware
         run: |
+          export TERM=dumb
           make -j1 V=s
 
       - name: Upload firmware artifact
