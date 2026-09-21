@@ -2,9 +2,6 @@ name: Build OpenWrt K3
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - master
 
 jobs:
   build:
@@ -12,15 +9,18 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+        with:
+          ref: openwrt-21.02
 
       - name: Install build dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libncurses-dev gawk flex bison openssl libssl-dev dkms libelf-dev libudev-dev libpci-dev libiberty-dev autoconf automake curl wget unzip git swig texinfo
 
-      - name: Download K3 config
+      - name: Download K3 config & Clean old build
         run: |
           wget -O .config https://raw.githubusercontent.com/SuixSy/lede/master/k3.config
+          make clean
 
       - name: Update & Install feeds
         run: |
