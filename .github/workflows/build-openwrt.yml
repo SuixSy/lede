@@ -23,10 +23,10 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      - name: Download K3 config & Clean
+      - name: Download K3 config & Manual Clean
         run: |
           wget -O .config https://raw.githubusercontent.com/SuixSy/lede/master/k3.config
-          make clean
+          rm -rf ./build_dir ./staging_dir ./bin ./tmp
           touch .config.old
 
       - name: Compile firmware
