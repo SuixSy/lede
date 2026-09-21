@@ -27,6 +27,7 @@ jobs:
 
       - name: Apply config (Non‑interactive fix)
         run: |
+          export TERM=dumb
           make olddefconfig
 
       - name: Compile firmware
