@@ -1,0 +1,40 @@
+name: Build OpenWrt
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu‑22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+
+      - name: Initialization environment
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo apt‑get update
+          sudo apt‑get install -y build‑essential ccache cmake curl file flex gawk gettext git gperf libncurses‑dev libssl‑dev libelf‑dev python3 rsync unzip wget zlib1g‑dev gcc‑multilib g++‑multilib device‑tree‑compiler
+
+      - name: Update feeds & Config
+        run: |
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+          # 下载K3现成.config配置
+          wget -O .config https://raw.githubusercontent.com/你的用户名/你的仓库名/master/k3.config
+          make defconfig
+
+      - name: Download source
+        run: make download -j$(nproc)
+
+      - name: Compile firmware
+        run: make -j$(nproc)
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenWrt‑K3‑Firmware
+          path: bin/targets/bcm53xx/generic/*.trx
