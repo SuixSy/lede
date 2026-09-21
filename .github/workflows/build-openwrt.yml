@@ -2,6 +2,9 @@ name: Build OpenWrt K3
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - master
 
 jobs:
   build:
@@ -9,8 +12,6 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
-        with:
-          ref: openwrt-21.02
 
       - name: Install build dependencies
         run: |
