@@ -31,14 +31,14 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      - name: Generate K3 config 【内置K3无线驱动】
+      - name: Generate K3 config【删除GENERIC_UBI，修复交换机网口】
         run: |
           cd immortalwrt
           rm -f .config
           echo "CONFIG_TARGET_bcm53xx=y" > .config
-          echo "CONFIG_TARGET_GENERIC_UBI=y" >> .config
+          # ！！重点：删除 CONFIG_TARGET_GENERIC_UBI=y，K3不能开启该选项
           echo "CONFIG_TARGET_DEVICE_bcm53xx_DEVICE_phicomm-k3=y" >> .config
-          # K3无线强制内置，解决iw list为空
+          # K3无线强制内置
           echo "CONFIG_PACKAGE_kmod-brcmfmac=y" >> .config
           echo "CONFIG_PACKAGE_brcmfmac-firmware-43602a1-phicomm-k3=y" >> .config
           echo "CONFIG_PACKAGE_libiwinfo-lua=y" >> .config
